@@ -24,7 +24,7 @@ import podcasts from './assets/data';
 function MusicPlayer() {
   
 
-  
+
   const podcastsCount = podcasts.length;
   const [trackIndex, setTrackIndex] = useState(0);
   const [trackTitle, setTrackTitle] = useState();
@@ -75,10 +75,13 @@ function MusicPlayer() {
 
   const togglePlayBack = async playBackState => {
     const currentTrack = await TrackPlayer.getCurrentTrack();
-    if (currentTrack != null) {
-      if ((playBackState == State.Paused) | (playBackState == State.Ready)) {
+
+    if (currentTrack !== null) {
+      if (playBackState.state === "paused" || playBackState.state === "buffering") {
+       
           await TrackPlayer.play();
         } else {
+          console.log('playBackState === State.Ready:',playBackState);
           await TrackPlayer.pause();
         }
       }
@@ -97,7 +100,17 @@ function MusicPlayer() {
       gettrackdata();
     };
   };
+
+  const replay = async () => {
+    await TrackPlayer.seekTo(0);
+  };
   
+  const forwardTrack = async () => {
+    await TrackPlayer.seekTo((await TrackPlayer.getPosition()) + 30); 
+  };
+const backforward= async () => {
+  await TrackPlayer.seekTo((await TrackPlayer.getPosition()) - 30); 
+};
   useEffect(() => {
     setupPlayer();
   }, []);
@@ -111,6 +124,16 @@ function MusicPlayer() {
         <View style={styles.songText}>
           <Text style={[styles.songContent, styles.songTitle]} numberOfLines={3}>{trackTitle}</Text>
           <Text style={[styles.songContent, styles.songArtist]} numberOfLines={2}>{trackArtist}</Text>
+        </View>
+      
+        {/* Ajoutez les icônes de favori et de commentaire ici */}
+        <View style={styles.topIconsContainer}>
+          <TouchableOpacity onPress={() => { /* Gérer l'événement de l'icône de favori */ }}>
+            <Ionicons name="heart-outline" size={30} color="#FFD369" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { /* Gérer l'événement de l'icône de commentaire */ }}>
+            <Ionicons name="chatbox-ellipses-outline" size={30} color="#FFD369" />
+          </TouchableOpacity>
         </View>
         <View>
           <Slider
@@ -137,6 +160,13 @@ function MusicPlayer() {
           </View>
         </View>
         <View style={styles.musicControlsContainer}>
+        <TouchableOpacity onPress={replay}>
+            <Ionicons 
+              name="ios-refresh-circle" 
+              size={35} 
+              color="#FFD369" 
+            />
+          </TouchableOpacity>
           <TouchableOpacity onPress={previoustrack}>
             <Ionicons 
               name="play-skip-back-outline" 
@@ -144,12 +174,17 @@ function MusicPlayer() {
               color="#FFD369" 
             />
           </TouchableOpacity>
+          <TouchableOpacity onPress={backforward}>
+      
+          <Ionicons name="play-skip-back" size={35} color="#FFD369" />
+      
+        </TouchableOpacity>
           <TouchableOpacity onPress={() => togglePlayBack(playBackState) }>
             <Ionicons
               name={
-                playBackState === State.Playing
+                playBackState.state === 'playing'
                   ? 'ios-pause-circle'
-                  : playBackState === State.Connecting
+                  : playBackState.state === 'loading'
                   ? 'ios-caret-down-circle'
                   : 'ios-play-circle'
               }
@@ -157,6 +192,11 @@ function MusicPlayer() {
               color="#FFD369"
             />
           </TouchableOpacity>
+          <TouchableOpacity onPress={forwardTrack}>
+      
+          <Ionicons name="play-skip-forward" size={35} color="#FFD369" />
+      
+        </TouchableOpacity>
           <TouchableOpacity onPress={nexttrack}>
             <Ionicons
               name="play-skip-forward-outline"
@@ -183,6 +223,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  topIconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingTop: 5,
+    width: '100%',
   },
   mainWrapper: {
     width: width,
@@ -214,7 +261,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     alignSelf: "stretch",
-    marginTop: 40,
+    marginTop: 10,
     marginLeft:5,
     marginRight:5
   },
@@ -231,8 +278,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 10,
     width: '60%',
   },
 });
