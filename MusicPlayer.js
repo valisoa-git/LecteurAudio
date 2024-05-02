@@ -23,6 +23,8 @@ import podcasts from './assets/data';
 
 function MusicPlayer() {
   
+
+  
   const podcastsCount = podcasts.length;
   const [trackIndex, setTrackIndex] = useState(0);
   const [trackTitle, setTrackTitle] = useState();
